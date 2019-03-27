@@ -114,6 +114,7 @@ type details = (thm list * thm tree list * thm list)
 
 
 fun get_all_typing_details ctxt name script : details = let
+(*
     val time = Timing.start ()
     val script_tree = (case parse_treesteps script of
         SOME tree => tree
@@ -121,10 +122,10 @@ fun get_all_typing_details ctxt name script : details = let
     val time_res = Timing.result time
     val _ = (@{print tracing} "phase: parse script"; @{print tracing} time_res)
     val _ = (log_info "phase: parse script"; log_info (@{make_string} time_res))
-
+*)
     val time = Timing.start ()
     val tacs = TTyping_Tactics.mk_ttsplit_tacs_final name
-        @{term "[] :: kind env"} ctxt script_tree
+        @{term "[] :: kind env"} ctxt script
     val tacs' = map (fn (tac, f) => (tac, fn ctxt => f ctxt 1)) tacs
     val time_res = Timing.result time
     val _ = (@{print tracing} "phase: tac gen"; @{print tracing} time_res)

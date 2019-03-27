@@ -153,12 +153,16 @@ formatTypecorrectProof fn =
                     ++ "    @{context} " ++ fn ++ "_typecorrect_script *}"]])
      ProofDone)) ]
 
-data TreeSteps a = StepDown | StepUp | Val a
-    deriving (Eq, Read, Show)
+-- data TreeSteps a = StepDown | StepUp | Val a
+--     deriving (Eq, Read, Show)
 
-flattenHintTree :: LeafTree Hints -> [TreeSteps Hints]
-flattenHintTree (Branch ths) = StepDown : concatMap flattenHintTree ths ++ [StepUp]
-flattenHintTree (Leaf h) = [Val h]
+-- flattenHintTree :: LeafTree Hints -> [TreeSteps Hints]
+-- flattenHintTree (Branch ths) = StepDown : concatMap flattenHintTree ths ++ [StepUp]
+-- flattenHintTree (Leaf h) = [Val h]
+
+flattenHintTree :: LeafTree Hints -> [Hints]
+flattenHintTree (Branch ths) = concatMap flattenHintTree ths
+flattenHintTree (Leaf h) = [h]
 
 proveSorry :: (Pretty a) => Definition TypedExpr a -> State TypingSubproofs [TheoryDecl I.Type I.Term]
 proveSorry (FunDef _ fn k ti to e) = do
@@ -177,7 +181,7 @@ prove decls (FunDef _ fn k ti to e) = do
   let eexpr = pushDown (Cons (Just ti) Nil) (splitEnv (Cons (Just ti) Nil) e)
   proofSteps' <- proofSteps decls (fmap snd k) ti eexpr
   ta <- use tsTypeAbbrevs
-  let typecorrect_script = formatMLProof (mod fn ++ "_typecorrect_script") "hints treestep" (map show $ flattenHintTree proofSteps')
+  let typecorrect_script = formatMLProof (mod fn ++ "_typecorrect_script") "hints" (map show $ flattenHintTree proofSteps')
   let fn_typecorrect_proof = typecorrect_script ++ (if __cogent_fml_typing_tree then formatMLTreeGen (mod fn) else []) ++ formatTypecorrectProof (mod fn)
   return (fn_typecorrect_proof, if __cogent_fml_typing_tree then formatMLTreeFinalise (mod fn) else [])
 prove _ _ = return ([], [])
